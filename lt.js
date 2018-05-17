@@ -1,7 +1,9 @@
 /* globals console, process */
 
 (function() {
-  var abstractFn,
+  var abstractDef,
+    abstractDefs,
+    abstractFn,
     abstractFns,
     dict,
     evl,
@@ -16,6 +18,33 @@
   dict = {};
   fnNr = 0;
   re = /\{([^\s{}]*)(?:[\s]*)([^{}]*)\}/g;
+
+  abstractDef = function(s, flag) {
+    var body, index, name;
+
+    flag = typeof flag === "undefined";
+    s = abstractDefs(s, false);
+
+    index = s.search(/\s/);
+    name = s.substring(0, index).trim();
+    body = s.substring(index).trim();
+
+    if (body.substring(0, 4) === "_FN_") {
+      dict[name] = dict[body];
+    } else {
+      body = evlForms(body);
+      dict[name] = function() {
+        return body;
+      };
+    }
+
+    return flag ? name : "";
+  };
+
+  abstractDefs = function(s, flag) {
+    while (s !== (s = formReplace(s, "{def", abstractDef, flag)));
+    return s;
+  };
 
   abstractFn = function(s) {
     var argl, args, body, i, index, name, regArgs;
@@ -50,7 +79,7 @@
           }
 
           pargs = args.slice(vall).join(" ");
-          body = "{" + pargs + "}" + body;
+          body = "{" + pargs + "} " + body;
           body = abstractFn(body);
         } else {
           // create form (ignore extra vals)
@@ -73,6 +102,7 @@
 
   evl = function(s) {
     s = abstractFns(s);
+    s = abstractDefs(s);
     s = evlForms(s);
     return s;
   };

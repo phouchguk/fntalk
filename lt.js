@@ -1,6 +1,6 @@
 /* globals exports */
 
-(function(out) {
+(function(exports) {
   var abstractDef,
     abstractDefs,
     abstractFn,
@@ -182,7 +182,7 @@
     return str.trim().replace(/\s+/g, " ");
   };
 
-  out.evl = function(s) {
+  exports.evl = function(s) {
     return evl(s);
   };
-})(exports || (window.lt = {}));
+})(typeof exports === "undefined" ? (this.lt = {}) : exports);

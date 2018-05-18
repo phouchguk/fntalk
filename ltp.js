@@ -1,7 +1,11 @@
-const lt = require("./lt.js");
-const stdin = process.openStdin();
+/* globals console, process, require */
 
-var data = "";
+var data, lt, stdin;
+
+lt = require("./lt.js");
+stdin = process.openStdin();
+
+data = "";
 
 stdin.on("data", function(chunk) {
   data += chunk;

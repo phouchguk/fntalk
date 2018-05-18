@@ -1,0 +1,174 @@
+1.
+
+Hello World
+
+{{fn {fruit unknown} The colour of fruit is unknown.} apple green}
+
+2.1 Basics
+
+{def hi Hello World}
+
+hi, I just say {hi}
+
+{def affm {fn {fruit unknown} The colour of fruit is unknown.}}
+
+{affm orange orange}
+{affm banana yellow}
+
+2.2 Data structures
+
+{def pair {fn {:x :y :z} {:z :x :y}}}
+{def left {fn {:z} {:z {fn {:x :y} :x}}}}
+{def right {fn {:z} {:z {fn {:x :y} :y}}}}
+
+{left {pair Hello World}}
+{right {pair Hello World}}
+
+{def republic
+  {pair Liberty
+    {pair Equality
+      {pair Fraternity
+        {pair Laicity nil}}}}}
+
+{left {republic}}
+{left {right {republic}}}
+{left {right {right {republic}}}}
+{left {right {right {right {republic}}}}}
+
+2.3 Control Structures
+
+{def nil {fn {:f :x} :x}}
+{def nil? {fn {:n} {:n {fn {:x} right} left}}}
+
+{nil? nil}
+{nil? {republic}}
+
+{def ldisplay
+  {fn {:list}
+    {{{nil? :list}
+      {pair
+       {fn {:list}}
+       {fn {:list}
+         {left :list} {ldisplay {right :list}}}}}
+        :list}}}
+
+{ldisplay {republic}}
+
+3.1 Defining and displaying numbers
+
+{def succ {fn {:n :f :x} {:f {{:n :f} :x}}}}
+
+{def zero nil}
+{def one {succ {zero}}}
+{def two {succ {one}}}
+{def three {succ {two}}}
+{def four {succ {three}}}
+{def five {succ {four}}}
+
+{def church {fn {:n} {{:n {fn {:x} :x|}} '}}}
+
+{church {zero}}
+{church {one}}
+{church {two}}
+{church {three}}
+{church {four}}
+{church {five}}
+
+3.2 A set of operators
+
+{def add {fn {:n :m :f :x} {{:n :f} {{:m :f} :x}}}}
+{def mult {fn {:n :m :f :x} {:n {:m :f} :x}}}
+{def power {fn {:n :m :f :x} {{:m :n :f} :x}}}
+
+{church {add {two} {three}}}
+{church {mult {two} {three}}}
+{church {power {two} {three}}}
+
+{def pred
+  {def pred.pair {fn {:p}
+    {pair {right :p} {succ {right :p}}}}}
+  {fn {:n} {left {{:n pred.pair} {pair {zero} {zero}}}}}}
+
+{church {pred {zero}}}
+{church {pred {one}}}
+{church {pred {three}}}
+
+{def sub {fn {:m :n} {{:n pred} :m}}}
+
+{church {sub {three} {two}}}
+
+3.3 Recursion
+
+{def fac
+  {fn {:n}
+    {{{nil? :n}
+      {pair {fn {:n} {one}}
+            {fn {:n} {mult :n {fac {pred :n}}}}}} :n}}}
+
+{church {fac {zero}}}
+{church {fac {three}}}
+{church {fac {mult {two} {two}}}}
+{church {fac {add {two} {three}}}}
+
+3.4 The Y-combinator
+
+{def Y {fn {:g :n} {:g :g :n}}}
+
+{def almost-fac
+  {fn {:g :n}
+   {{{nil? :n}
+     {pair {fn {:g :n} {one}}
+           {fn {:g :n} {mult :n {:g :g {pred :n}}}}
+     }} :g :n}}}
+
+{church {Y almost-fac {five}}}
+
+{def yfac
+ {fn {:n}
+  {{fn {:g :n} {:g :g :n}}
+   {fn {:g :n}
+    {{{nil? :n}
+     {pair {fn {:g :n} {one}}
+          {fn {:g :n} {mult :n {:g :g {pred :n}}}}
+     }} :g :n
+     }} :n}}}
+
+{church {yfac {five}}}
+
+3.5 The div operator
+
+{def div
+ {def div.r
+  {fn {:a :b :q :r}
+   {{{nil? {sub {mult :b :q} :a}}
+    {pair
+     {fn {:a :b :q :r} {div.r :a :b {succ :q}
+                              {sub :a {mult :b :q}}}}
+     {fn {:a :b :q :r} {pair {pred :q} :r}}
+   }} :a :b :q :r}
+   }}
+   {fn {:a :b}
+    {{fn {:d}
+     [{church {left :d}} {church {right :d}}]}
+      {div.r :a :b {zero} :b}}}}
+
+{div {zero} {two}}
+{div {one} {two}}
+{div {two} {two}}
+{div {three} {two}}
+{div {four} {two}}
+{div {five} {two}}
+
+3.6 The Towers of Hanoi
+
+{def hanoi
+ {fn {:n :from :to :via}
+  {{{nil? :n}
+   {pair {fn {:n :from :to :via}}
+    {fn {:n :from :to :via}
+      {hanoi {pred :n} :from :via :to}
+      move disc from :from to :to
+      {hanoi {pred :n} :via :to :from}}}}
+        :n :from :to :via}}}
+
+{hanoi {four} 1 2 3}

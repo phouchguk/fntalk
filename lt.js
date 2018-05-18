@@ -1,6 +1,6 @@
-/* globals console, process */
+/* globals exports */
 
-(function() {
+(function(out) {
   var abstractDef,
     abstractDefs,
     abstractFn,
@@ -182,7 +182,7 @@
     return str.trim().replace(/\s+/g, " ");
   };
 
-  if (process.argv.length > 2) {
-    console.log(evl(process.argv[2]));
-  }
-})();
+  out.evl = function(s) {
+    return evl(s);
+  };
+})(exports || (window.lt = {}));

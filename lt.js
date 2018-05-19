@@ -193,10 +193,6 @@
 
     i2 = conds.indexOf("else");
 
-    if (i2 === -1) {
-      i2 = conds.length;
-    }
-
     cond = conds.substring(0, i1).trim();
 
     if (typeof regArgs !== "undefined" && typeof vals !== "undefined") {
@@ -207,7 +203,7 @@
 
     res =
       evlForms(cond) === "true"
-        ? conds.substring(i1 + 5, i2).trim()
+        ? conds.substring(i1 + 5, i2 === -1 ? conds.length : i2).trim()
         : i2 === -1 ? "" : conds.substring(i2 + 5).trim();
 
     body = body.replace(name, res);

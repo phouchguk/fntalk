@@ -1,0 +1,11 @@
+{if true then 5 else 7}
+
+{if blah then 5 else {if true then nested if else nada}}
+
+{if true 5}
+
+{if true then don't need to specify alt}
+
+{{fn {fruit unknown} The colour of {if true then mango (not fruit) else fruit} is unknown.} apple green}
+
+{{fn {fruit unknown} The colour of {if this is not true then mango else fruit} is unknown.} apple green}

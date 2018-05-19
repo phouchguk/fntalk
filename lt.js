@@ -5,19 +5,30 @@
     abstractDefs,
     abstractFn,
     abstractFns,
+    abstractIf,
+    abstractIfs,
     balance,
     dict,
     evl,
     evlForm,
     evlForms,
+    evlIfs,
     extractForm,
     fnNr,
     formReplace,
+    ifDisplay,
+    ifNr,
+    ifs,
+    postprocessing,
     re,
     supertrim;
 
   dict = {};
+  ifs = {};
+
   fnNr = 0;
+  ifNr = 0;
+
   re = /\{([^\s{}]*)(?:[\s]*)([^{}]*)\}/g;
 
   abstractDef = function(s, flag) {
@@ -62,6 +73,8 @@
       regArgs[i] = new RegExp(args[i], "g");
     }
 
+    body = abstractIfs(body);
+
     dict[name] = function() {
       var vall, vals;
 
@@ -71,6 +84,7 @@
       return (function(body) {
         var i, pargs;
 
+        body = evlIfs(body, regArgs, vals);
         body = supertrim(body);
 
         if (vall < argl) {
@@ -101,6 +115,23 @@
     return s;
   };
 
+  abstractIf = function(s) {
+    var name;
+
+    s = abstractIfs(s);
+    name = "_IF_" + ifNr;
+    ifNr += 1;
+
+    ifs[name] = s;
+
+    return name;
+  };
+
+  abstractIfs = function(s) {
+    while (s !== (s = formReplace(s, "{if", abstractIf)));
+    return s;
+  };
+
   balance = function(s) {
     var stop, stopn, strt, strtn;
 
@@ -124,9 +155,10 @@
 
     s = abstractFns(s);
     s = abstractDefs(s);
+    s = abstractIfs(s);
     s = evlForms(s);
 
-    return s;
+    return postprocessing(s);
   };
 
   evlForm = function() {
@@ -138,6 +170,50 @@
     return dict.hasOwnProperty(f)
       ? dict[f].apply(null, [r])
       : "(" + f + " " + r + ")";
+  };
+
+  evlIfs = function(body, regArgs, vals) {
+    var cond, conds, i, i1, i2, m, name, res;
+
+    m = body.match(/_IF_\d+/);
+
+    if (m === null) {
+      return body;
+    }
+
+    name = m[0];
+    conds = ifs[name];
+
+    // don't parse 'if' until it's evaluated (it might never be)
+    i1 = conds.indexOf("then");
+
+    if (i1 === -1) {
+      return "(no 'then' in (if " + conds + "))";
+    }
+
+    i2 = conds.indexOf("else");
+
+    if (i2 === -1) {
+      i2 = conds.length;
+    }
+
+    cond = conds.substring(0, i1).trim();
+
+    if (typeof regArgs !== "undefined" && typeof vals !== "undefined") {
+      for (i = 0; i < vals.length; i++) {
+        cond = cond.replace(regArgs[i], vals[i]);
+      }
+    }
+
+    res =
+      evlForms(cond) === "true"
+        ? conds.substring(i1 + 5, i2).trim()
+        : i2 === -1 ? "" : conds.substring(i2 + 5).trim();
+
+    body = body.replace(name, res);
+    body = evlIfs(body, regArgs, vals);
+
+    return body;
   };
 
   extractForm = function(sym, str) {
@@ -198,6 +274,18 @@
     r = s === null ? str : str.replace(sym + s + "}", fn(s, flag));
 
     return r;
+  };
+
+  ifDisplay = function(s) {
+    return s.replace(/_IF_\d+/g, function(c) {
+      return evlForms(evlIfs(c));
+    });
+  };
+
+  postprocessing = function(s) {
+    s = ifDisplay(s);
+
+    return s;
   };
 
   supertrim = function(str) {

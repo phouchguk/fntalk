@@ -5,6 +5,7 @@
     abstractDefs,
     abstractFn,
     abstractFns,
+    balance,
     dict,
     evl,
     evlForm,
@@ -82,7 +83,7 @@
           body = "{" + pargs + "} " + body;
           body = abstractFn(body);
         } else {
-          // create form (ignore extra vals)
+          // create form (i < argl to ignore extra vals)
           for (i = 0; i < argl; i += 1) {
             body = body.replace(regArgs[i], vals[i]);
           }
@@ -100,10 +101,31 @@
     return s;
   };
 
+  balance = function(s) {
+    var stop, stopn, strt, strtn;
+
+    strt = s.match(/\{/g);
+    stop = s.match(/\}/g);
+
+    strtn = strt ? strt.length : 0;
+    stopn = stop ? stop.length : 0;
+
+    return { left: strtn, right: stopn };
+  };
+
   evl = function(s) {
+    var bal;
+
+    bal = balance(s);
+
+    if (bal.left !== bal.right) {
+      return s;
+    }
+
     s = abstractFns(s);
     s = abstractDefs(s);
     s = evlForms(s);
+
     return s;
   };
 

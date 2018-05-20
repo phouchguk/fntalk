@@ -1,6 +1,8 @@
 /* globals exports */
 
 (function(exports) {
+  "use strict";
+
   var abstractDef,
     abstractDefs,
     abstractFn,
@@ -13,6 +15,8 @@
     evlForm,
     evlForms,
     evlIfs,
+    evlQuote,
+    evlQuotes,
     extractForm,
     fnNr,
     formReplace,
@@ -20,14 +24,20 @@
     ifNr,
     ifs,
     postprocessing,
+    quot,
+    quote,
+    quotNr,
     re,
-    supertrim;
+    supertrim,
+    unquote;
 
   dict = {};
   ifs = {};
+  quot = {};
 
   fnNr = 0;
   ifNr = 0;
+  quotNr = 0;
 
   re = /\{([^\s{}]*)(?:[\s]*)([^{}]*)\}/g;
 
@@ -153,6 +163,7 @@
       return s;
     }
 
+    s = evlQuotes(s);
     s = abstractFns(s);
     s = abstractDefs(s);
     s = abstractIfs(s);
@@ -202,7 +213,7 @@
     }
 
     res =
-      evlForms(cond) === "true"
+      evlForms(cond) === "left"
         ? conds.substring(i1 + 5, i2 === -1 ? conds.length : i2).trim()
         : i2 === -1 ? "" : conds.substring(i2 + 5).trim();
 
@@ -210,6 +221,15 @@
     body = evlIfs(body, regArgs, vals);
 
     return body;
+  };
+
+  evlQuote = function(s) {
+    return quote(s);
+  };
+
+  evlQuotes = function(s) {
+    while (s !== (s = formReplace(s, "{quote", evlQuote)));
+    return s;
   };
 
   extractForm = function(sym, str) {
@@ -280,12 +300,30 @@
 
   postprocessing = function(s) {
     s = ifDisplay(s);
+    s = unquote(s);
 
     return s;
   };
 
-  supertrim = function(str) {
-    return str.trim().replace(/\s+/g, " ");
+  quote = function(s) {
+    var name;
+
+    name = "_QUOT_" + quotNr;
+    quotNr += 1;
+    quot[name] = s;
+
+    return name;
+  };
+
+  supertrim = function(s) {
+    return s.trim().replace(/\s+/g, " ");
+  };
+
+  unquote = function(s) {
+    s = s.replace(/_QUOT_\d+/, function(name) {
+      return quot[name];
+    });
+    return s;
   };
 
   exports.evl = function(s) {

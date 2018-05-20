@@ -6,6 +6,39 @@
 
 {if true then don't need to specify alt}
 
-{{fn {fruit unknown} The colour of {if true then mango (not fruit) else fruit} is unknown.} apple green}
+{{fn {fruit unknown} The {if true then fruit 5 else 7} colour of {if true then mango (not fruit) else fruit} is unknown.} apple green}
 
 {{fn {fruit unknown} The colour of {if this is not true then mango else fruit} is unknown.} apple green}
+
+{def pair {fn {:x :y :z} {:z :x :y}}}
+{def left {fn {:z} {:z {fn {:x :y} :x}}}}
+{def right {fn {:z} {:z {fn {:x :y} :y}}}}
+
+{left {pair Hello World}}
+{right {pair Hello World}}
+
+{def nil {fn {:f :x} :x}}
+{def nil? {fn {:n} {:n {fn {:x} right} left}}}
+
+{def republic
+  {pair Liberty
+    {pair Equality
+      {pair Fraternity
+        {pair Laicity nil}}}}}
+
+{nil? nil}
+{nil? {republic}}
+
+{left {republic}}
+{left {right {republic}}}
+{left {right {right {republic}}}}
+{left {right {right {right {republic}}}}}
+
+{def disp
+ {fn {:list}
+  {if {nil? :list}
+   then
+   else {left :list} {disp {right :list}}}}}
+
+{quote {disp {republic}}}
+{disp {republic}}
